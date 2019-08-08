@@ -1,3 +1,17 @@
+function highlightPossibleModalNodes () {
+  // We are looking for nodes that have:
+  //   * a larger z-index value
+  //   * are statically or absolutely positioned to the top or bottom of the viewport
+}
+
+function getZIndexNodes () {
+
+}
+
+function getTopBottomPositionedNodes () {
+
+}
+
 function highlightZindexNodes() {
   // See: https://gist.githubusercontent.com/ZER0/5267608/raw/b523ce8df158e7d1df15b2f0ef0bc1036b487faa/gistfile1.js
   var proto = Element.prototype;
@@ -32,14 +46,6 @@ function highlightZindexNodes() {
     }
   }, []);
 
-  // var cssRules = slice(document.styleSheets).reduce((rules, styleSheet) => {
-  //   try {
-  //     return rules.concat(slice(styleSheet.cssRules));
-  //   } catch (ex) {
-
-  //   }
-  // }, []);
-
   if (!cssRules.length) {
     console.error('Cannot parse cssRules!');
     return;
@@ -52,7 +58,7 @@ function highlightZindexNodes() {
       if (rule.style) {
         let zIndex = rule.style.zIndex;
         console.log(zIndex);
-        if (zIndex) {
+        if (zIndex && zIndex > 0) {
           results.push({
             selectorText: rule.selectorText,
             zIndex: zIndex
@@ -76,8 +82,6 @@ function highlightZindexNodes() {
     };
   });
 
-  // console.log(nodes, zIndexes);
-
   results.forEach((item) => {
     let node = document.querySelector(item.selectorText);
     if (node) {
@@ -93,5 +97,4 @@ function highlightZindexNodes() {
       });
     }
   });
-
 }

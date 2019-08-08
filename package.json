@@ -1,0 +1,26 @@
+{
+  "name": "nuke-modal",
+  "version": "0.0.1",
+  "description": "Learn about and nuke cookie accept modals in web pages",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/daviddahl/nuke-modal.git"
+  },
+  "keywords": [
+    "modal",
+    "dialog",
+    "browser",
+    "extension",
+    "ipfs"
+  ],
+  "author": "ddahl@nulltxt.se",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/daviddahl/nuke-modal/issues"
+  },
+  "homepage": "https://github.com/daviddahl/nuke-modal#readme"
+}
