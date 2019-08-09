@@ -16,9 +16,13 @@ function highlightZindexNodes() {
   // See: https://gist.githubusercontent.com/ZER0/5267608/raw/b523ce8df158e7d1df15b2f0ef0bc1036b487faa/gistfile1.js
   var proto = Element.prototype;
   var slice = Function.call.bind(Array.prototype.slice);
-  var matches = Function.call.bind(proto.matchesSelector ||
-                                   proto.mozMatchesSelector || proto.webkitMatchesSelector ||
-                                   proto.msMatchesSelector || proto.oMatchesSelector);
+  var matches = Function.call.bind(
+    proto.matchesSelector ||
+      proto.mozMatchesSelector ||
+      proto.webkitMatchesSelector ||
+      proto.msMatchesSelector ||
+      proto.oMatchesSelector
+  );
 
   // Returns true if a DOM Element matches a cssRule
   var elementMatchCSSRule = function (element, cssRule) {
@@ -30,20 +34,36 @@ function highlightZindexNodes() {
     return prop in cssRule.style && cssRule.style[prop] !== "";
   };
 
-
   // Here we get the cssRules across all the stylesheets in one array
   var sliced = slice(document.styleSheets);
 
   var cssRules = [];
 
   sliced.reduce((rules, styleSheet) => {
-    console.log(rules, styleSheet);
-    try {
-      cssRules.push(rules.concat(slice(styleSheet.cssRules)));
-    } catch (ex) {
-      // XXX: likely a security error... how to get the CSS stylesheet data??
-      console.error(ex);
+    console.log(`styleSheet: ${styleSheet}`);
+    console.log(`rules: ${rules}`);
+    if (Array.isArray(rules)) {
+      try {
+        cssRules.push(rules.concat(slice(styleSheet.cssRules)));
+      } catch (ex) {
+        // XXX: likely a security error... how to get the CSS stylesheet data??
+        // console.error(ex);
+
+          if (ex.name === 'SecurityError') {
+            styleSheet.ownerNode.parentNode.removeChild(
+              styleSheet.ownerNode
+            );
+            fetch(styleSheet.href).then(resp => resp.text()).then(css => {
+              let style = document.createElement('style');
+              style.innerText = css;
+              console.log(style);
+              document.head.appendChild(style);
+            });
+          }
+
+      }
     }
+
   }, []);
 
   if (!cssRules.length) {
