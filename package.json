@@ -2,7 +2,7 @@
   "name": "nuke-modal",
   "version": "0.0.1",
   "description": "Learn about and nuke cookie accept modals in web pages",
-  "main": "index.js",
+  "main": "nuke.js",
   "scripts": {
     "test": "npm run test"
   },
