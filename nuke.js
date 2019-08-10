@@ -38,21 +38,32 @@ function organizeZindexRules (zIndexRules) {
 
 const HIGHLIGHT_STYLE = 'border: dotted red 2px !important;';
 const HIGHLIGHT_CLASS = '__z__index__node__';
+const DEBUG = false;
 
 function highlight(nodes) {
   nodes.forEach((item) => {
     let node = document.querySelector(item.selectorText);
     if (node) {
-      node.style = HIGHLIGHT_STYLE;
-      node.classList.add(HIGHLIGHT_CLASS);
+      // Let's be naive here
+      if (node.textContent.toLowerCase().includes('cookie')) {
+        if (!DEBUG) {
+          console.log(`NUKE-MODAL: making node ${node} disappear`);
+          node.style = 'display: none;';
+        }
 
-      node.addEventListener('click', (event) => {
-        console.log('hide this node');
-        // XXX: notify IPFS CRDT of new modal dialog to nuke
-        node.style = 'display: none;';
-        console.log(`clicked ${event.target}`);
-        // XXX: remove highlights...
-      });
+        if (DEBUG) {
+          node.style = HIGHLIGHT_STYLE;
+          node.classList.add(HIGHLIGHT_CLASS);
+
+          node.addEventListener('click', (event) => {
+            console.log('hide this node');
+            // XXX: notify IPFS CRDT of new modal dialog to nuke
+            node.style = 'display: none;';
+            console.log(`clicked ${event.target}`);
+            // XXX: remove highlights...
+          });
+        }
+      }
     }
   });
 }
@@ -78,7 +89,7 @@ function getZindexRules(cssRules) {
 }
 
 window.addEventListener('load', () => {
-  console.log('window - load - capture');
+  console.log('NUKE-MODAL: window load');
   let sheets = slice(document.styleSheets);
   let allRules = getAllRules(sheets, rules);
 }, true);
