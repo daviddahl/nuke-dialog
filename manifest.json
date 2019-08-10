@@ -15,5 +15,9 @@
   ],
   "permissions": [
     "activeTab"
-  ]
+  ],
+  "background": {
+    "scripts": ["css-fetch.js"],
+    "persistent": false
+  }
 }
