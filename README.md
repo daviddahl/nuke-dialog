@@ -1,6 +1,6 @@
-# nuke-modal
+# nuke-dialog
 
-Nuke modal dialogs on web pages
+Nuke cookie dialogs on web pages
 
 ## Concept
 
