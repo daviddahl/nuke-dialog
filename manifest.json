@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
 
-  "name": "nuke-modal",
-  "description": "This extension attempts to discover and nuke all cookie modals found on web pages, saving humanity many many hours of needed productivity:)",
+  "name": "nuke-dialog",
+  "description": "This extension attempts to discover and nuke all cookie/GDPR dialigs found on web pages, saving humanity many many hours of needed productivity.",
   "version": "0.0.2",
   "author": "David Dahl",
 
