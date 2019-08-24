@@ -3,13 +3,13 @@
 
   "name": "nuke-modal",
   "description": "This extension attempts to discover and nuke all cookie modals found on web pages, saving humanity many many hours of needed productivity:)",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "David Dahl",
 
     "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["nuke.js"],
+      "js": ["nuke.js", "mutation.js"],
       "run_at": "document_start"
     }
   ],

@@ -15,22 +15,39 @@ const HIGHLIGHT_STYLE = 'border: dotted red 2px !important;';
 const HIGHLIGHT_CLASS = '__z__index__node__';
 const DEBUG = false;
 const dismissStyle = 'display: none;';
+let mutationObserver = null;
+
+window.document.addEventListener('DOMContentLoaded', () => {
+  console.log('NUKE-MODAL: window DCL');
+  // start mob:
+  mutationObserver = mob(window);
+});
 
 window.addEventListener('load', () => {
   console.log('NUKE-MODAL: window load');
-  let foundAndDsimissed = dismissWellKnownDialogs();
-  if (foundAndDsimissed) {
-    console.log('NUKE-MODAL: found well known dialog and dismissed');
-    return;
-  }
-  let sheets = slice(document.styleSheets);
-  let allRules = getAllRules(sheets, rules);
+  window.setTimeout((event) => {
+    let foundAndDsimissed = dismissWellKnownDialogs();
+    if (foundAndDsimissed) {
+      console.log('NUKE-MODAL: found well known dialog and dismissed');
+      return;
+    }
+    let sheets = slice(document.styleSheets);
+    let allRules = getAllRules(sheets, rules);
 
-  if (numberOfRemoteSheets < 1) {
-    nukeDialogs();
-  }
+    if (numberOfRemoteSheets < 1) {
+      nukeDialogs();
+    }
 
+    console.log(mutationObserver.getTargetNodes());
+    mutationObserver.getTargetNodes().forEach((node, idx) => {
+      node.style.display = 'none';
+      console.log('NUKE: ', node);
+    });
+
+  }, 3000);
 }, true);
+
+// TODO: bind key command to nuke nodes, toggle nodes, etc
 
 function dismissWellKnownDialogs () {
   let bannerFound = false;
