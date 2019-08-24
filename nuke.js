@@ -4,6 +4,15 @@ window.browser = (() => {
         window.chrome;
 })();
 
+browser.storage.local.get(['whiteListDomains'], (result) => {
+  console.log(result.whiteListDomains);
+  if (!result.whiteListDomains) {
+    browser.storage.local.set({ whiteListDomains: {} }, (result) => {
+      console.log(`WhiteListdomains is set to`, result.value);
+    });
+  }
+});
+
 var slice = Function.call.bind(Array.prototype.slice);
 var numberOfRemoteSheets = 0;
 var rules = [];
@@ -15,6 +24,7 @@ const HIGHLIGHT_STYLE = 'border: dotted red 2px !important;';
 const HIGHLIGHT_CLASS = '__z__index__node__';
 const DEBUG = false;
 const dismissStyle = 'display: none;';
+const DEFAULT_TIMEOUT = 1000;
 let mutationObserver = null;
 
 window.document.addEventListener('DOMContentLoaded', () => {
@@ -24,27 +34,35 @@ window.document.addEventListener('DOMContentLoaded', () => {
 });
 
 window.addEventListener('load', () => {
-  console.log('NUKE-MODAL: window load');
-  window.setTimeout((event) => {
-    let foundAndDsimissed = dismissWellKnownDialogs();
-    if (foundAndDsimissed) {
-      console.log('NUKE-MODAL: found well known dialog and dismissed');
+  browser.storage.local.get(['whiteListDomains'], (result) => {
+    let origin = window.document.location.origin;
+    if (result.whiteListDomains[origin]) {
+      console.log('NUKE: Whitelisted.. cancelling.');
       return;
     }
-    let sheets = slice(document.styleSheets);
-    let allRules = getAllRules(sheets, rules);
 
-    if (numberOfRemoteSheets < 1) {
-      nukeDialogs();
-    }
+    console.log('NUKE-MODAL: window load');
+    window.setTimeout((event) => {
+      let foundAndDsimissed = dismissWellKnownDialogs();
+      if (foundAndDsimissed) {
+        console.log('NUKE-MODAL: found well known dialog and dismissed');
+        return;
+      }
+      let sheets = slice(document.styleSheets);
+      let allRules = getAllRules(sheets, rules);
 
-    console.log(mutationObserver.getTargetNodes());
-    mutationObserver.getTargetNodes().forEach((node, idx) => {
-      node.style.display = 'none';
-      console.log('NUKE: ', node);
-    });
+      if (numberOfRemoteSheets < 1) {
+        nukeDialogs();
+      }
 
-  }, 3000);
+      console.log(mutationObserver.getTargetNodes());
+      mutationObserver.getTargetNodes().forEach((node, idx) => {
+        node.style.display = 'none';
+        console.log('NUKE: ', node);
+      });
+
+    }, DEFAULT_TIMEOUT);
+  });
 }, true);
 
 // TODO: bind key command to nuke nodes, toggle nodes, etc
