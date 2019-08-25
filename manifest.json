@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "homepage_url": "https://github.com/daviddahl/nuke-dialog",
   "name": "Nuke Dialog",
-  "description": "This extension attempts to discover and nuke all cookie / GDPR dialogs found on web pages, saving humanity many hours of needed productivity - and the use of fine motor control for things that matter.",
+  "description": "This extension attempts to discover and hide all cookie / GDPR dialogs found on web pages",
   "version": "0.0.2",
   "author": "David Dahl",
   "content_scripts": [
