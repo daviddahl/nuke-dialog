@@ -12,6 +12,14 @@ window.browser = (() => {
 })();
 
 const IGNORED_ORIGINS = 'ignored-origins';
+const slice = Function.call.bind(Array.prototype.slice);
+var numberOfRemoteSheets = 0;
+var rules = [];
+var NUKE_DIALOGS_CALLED = false;
+const NUKED_NODE_CLASS = '__nuke__dialog__node__';
+const DEBUG = false;
+const DEFAULT_TIMEOUT = 1000;
+let mutationObserver = null;
 
 // Establish the ignored-origins storage object
 browser.storage.local.get([IGNORED_ORIGINS], (result) => {
@@ -26,15 +34,6 @@ browser.storage.local.get([IGNORED_ORIGINS], (result) => {
     });
   }
 });
-
-const slice = Function.call.bind(Array.prototype.slice);
-var numberOfRemoteSheets = 0;
-var rules = [];
-var NUKE_DIALOGS_CALLED = false;
-const NUKED_NODE_CLASS = '__nuke__dialog__node__';
-const DEBUG = true;
-const DEFAULT_TIMEOUT = 1000;
-let mutationObserver = null;
 
 // DCL eventListener used to kick off mutationObserver before load
 window.document.addEventListener('DOMContentLoaded', () => {
@@ -71,7 +70,8 @@ window.addEventListener('load', () => {
         if (DEBUG) {
           console.info('NUKE: ', node);
         }
-        // TODO: disable mutation observer if we have dismissed at least 1 dialog?
+        // Turn off the MutationObserver
+        mutationObserver.disconnect();
       });
 
     }, DEFAULT_TIMEOUT);
