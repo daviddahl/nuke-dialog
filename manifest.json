@@ -1,12 +1,11 @@
 {
   "manifest_version": 2,
-
-  "name": "nuke-dialog",
-  "description": "This extension attempts to discover and nuke all cookie/GDPR dialigs found on web pages, saving humanity many many hours of needed productivity.",
+  "homepage_url": "https://github.com/daviddahl/nuke-dialog",
+  "name": "Nuke Dialog",
+  "description": "This extension attempts to discover and hide all cookie / GDPR dialogs found on web pages",
   "version": "0.0.2",
   "author": "David Dahl",
-
-    "content_scripts": [
+  "content_scripts": [
     {
       "matches": ["<all_urls>"],
       "js": ["nuke.js", "mutation.js"],
@@ -27,5 +26,10 @@
     },
     "default_title": "Nuke Dialog: Auto-dismiss cookie & GDPR dialogs",
     "default_popup": "ui/ui.html"
+  },
+  "icons": {
+    "16": "images/icon16.png",
+    "48": "images/icon.png",
+    "128": "images/icon128.png"
   }
 }

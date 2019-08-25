@@ -1,7 +1,6 @@
 const mob = (window) => {
 
   let targetNodes = new Set();
-
   const config = { attributes: true, childList: true, subtree: true };
 
   const callback = (mutationsList, observer) => {
@@ -11,37 +10,39 @@ const mob = (window) => {
           slice(mutation.addedNodes).forEach((node, idx) => {
             let zIdx = hasZindex(node);
             if (zIdx) {
-              console.log(zIdx);
+              if (DEBUG) {
+                console.log(zIdx);
+              }
               if (naiveCookieTextCheck(node)) {
                 targetNodes.add(node);
-                console.log('added node to targetNodes', node);
+                if (DEBUG) {
+                  console.log('added node to targetNodes', node);
+                }
               }
             }
           });
         }
       }
       else if (mutation.type === 'attributes') {
-        console.log(`The ${mutation.attributeName} attribute was modified.`);
-        // console.log(mutation.target);
+        // console.log(`The ${mutation.attributeName} attribute was modified.`);
         if (!mutation.target) {
           return;
         }
         let zIdx = hasZindex(mutation.target);
-        // console.log(typeof mutation.target, mutation.target, zIdx);
         if (zIdx) {
-          console.log(mutation.target, zIdx);
+          // console.log(mutation.target, zIdx);
           if (naiveCookieTextCheck(mutation.target)) {
             targetNodes.add(mutation.target);
-            console.log('added node to targetNodes', mutation.target);
+            // console.log('added node to targetNodes', mutation.target);
           }
         }
       } else {
-        console.log(mutation.type, mutation);
+        // console.log(mutation.type, mutation);
         let zIdx = hasZindex(mutation.target);
         if (zIdx) {
           if (naiveCookieTextCheck(mutation.target)) {
             targetNodes.add(mutation.target);
-            console.log('added node to targetNodes', mutation.target, zIdx);
+            // console.log('added node to targetNodes', mutation.target, zIdx);
           }
         }
       }
