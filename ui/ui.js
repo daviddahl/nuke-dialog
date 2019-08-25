@@ -4,6 +4,9 @@ window.browser = (() => {
     window.chrome;
 })();
 
+const IGNORED_ORIGINS = 'ignored-origins';
+const DEBUG = true;
+
 const getCurrentHostAndDisable = () => {
   browser.tabs.query(
     {
@@ -16,13 +19,15 @@ const getCurrentHostAndDisable = () => {
 };
 
 const disable = (origin) => {
-  browser.storage.local.get(['whiteListDomains'], (result) => {
-    console.log(`Value currently is`, result.whiteListDomains);
-    if (!result.whiteListDomains[origin]) {
-      let newList = Object.assign(result.whiteListDomains);
+  browser.storage.local.get([IGNORED_ORIGINS], (result) => {
+    console.log(`Value currently is`, result[IGNORED_ORIGINS]);
+    if (!result[IGNORED_ORIGINS][origin]) {
+      let newList = Object.assign(result[IGNORED_ORIGINS]);
       newList[origin] = Date.now();
-      browser.storage.local.set({ whiteListDomains: newList }, () => {
-        console.log(`WhiteListdomains is set to`, newList);
+      browser.storage.local.set({ [IGNORED_ORIGINS]: newList }, () => {
+        if (DEBUG) {
+          console.log(`${IGNORED_ORIGINS} is set to`, newList);
+        }
       });
     }
     window.close();
@@ -30,7 +35,6 @@ const disable = (origin) => {
 };
 
 window.addEventListener('DOMContentLoaded', (event) => {
-  // debugger;
   document.querySelector('#disable').addEventListener('click', (event) => {
     getCurrentHostAndDisable();
   });

@@ -1,53 +1,62 @@
+// nuke-dialogs
+// Dismiss all GDPR and Cookie dialogs from your browsing experience.
+// Copyright 2019, David Dahl, ddahl@nulltxt.se
+// MIT Licensed
+
+
+// Set the browser API to browser to be browser agnostic
 window.browser = (() => {
     return window.msBrowser ||
         window.browser ||
         window.chrome;
 })();
 
-browser.storage.local.get(['whiteListDomains'], (result) => {
-  console.log(result.whiteListDomains);
-  if (!result.whiteListDomains) {
-    browser.storage.local.set({ whiteListDomains: {} }, (result) => {
-      console.log(`WhiteListdomains is set to`, result.value);
+const IGNORED_ORIGINS = 'ignored-origins';
+
+// Establish the ignored-origins storage object
+browser.storage.local.get([IGNORED_ORIGINS], (result) => {
+  if (DEBUG) {
+    console.log(result[IGNORED_ORIGINS]);
+  }
+  if (!result[IGNORED_ORIGINS]) {
+    browser.storage.local.set({ [IGNORED_ORIGINS]: {} }, (result) => {
+      if (DEBUG) {
+        console.log(`${IGNORED_ORIGINS} is set to`, result.value);
+      }
     });
   }
 });
 
-var slice = Function.call.bind(Array.prototype.slice);
+const slice = Function.call.bind(Array.prototype.slice);
 var numberOfRemoteSheets = 0;
 var rules = [];
 var NUKE_DIALOGS_CALLED = false;
-const wellKnownSelectors = [
-  '[aria-label="cookieconsent"]' // https://cookieconsent.osano.com/
-];
-const HIGHLIGHT_STYLE = 'border: dotted red 2px !important;';
-const HIGHLIGHT_CLASS = '__z__index__node__';
-const DEBUG = false;
-const dismissStyle = 'display: none;';
+const NUKED_NODE_CLASS = '__nuke__dialog__node__';
+const DEBUG = true;
 const DEFAULT_TIMEOUT = 1000;
 let mutationObserver = null;
 
+// DCL eventListener used to kick off mutationObserver before load
 window.document.addEventListener('DOMContentLoaded', () => {
-  console.log('NUKE-MODAL: window DCL');
+  if (DEBUG) {
+    console.log('NUKE-MODAL: window DCL');
+  }
   // start mob:
   mutationObserver = mob(window);
 });
 
+// load eventListener used to establish the IGNORED_ORIGINS
 window.addEventListener('load', () => {
-  browser.storage.local.get(['whiteListDomains'], (result) => {
+  browser.storage.local.get([IGNORED_ORIGINS], (result) => {
     let origin = window.document.location.origin;
-    if (result.whiteListDomains[origin]) {
-      console.log('NUKE: Whitelisted.. cancelling.');
+    if (result[IGNORED_ORIGINS][origin]) {
+      console.info('NUKE: Ignoring this origin. cancelled run.');
       return;
     }
 
-    console.log('NUKE-MODAL: window load');
+    console.info('NUKE-MODAL: window load');
+
     window.setTimeout((event) => {
-      let foundAndDsimissed = dismissWellKnownDialogs();
-      if (foundAndDsimissed) {
-        console.log('NUKE-MODAL: found well known dialog and dismissed');
-        return;
-      }
       let sheets = slice(document.styleSheets);
       let allRules = getAllRules(sheets, rules);
 
@@ -55,32 +64,19 @@ window.addEventListener('load', () => {
         nukeDialogs();
       }
 
-      console.log(mutationObserver.getTargetNodes());
       mutationObserver.getTargetNodes().forEach((node, idx) => {
+        // Dismiss dialogs found via mutation observer
         node.style.display = 'none';
-        console.log('NUKE: ', node);
+        node.classList.add(NUKED_NODE_CLASS);
+        if (DEBUG) {
+          console.info('NUKE: ', node);
+        }
+        // TODO: disable mutation observer if we have dismissed at least 1 dialog?
       });
 
     }, DEFAULT_TIMEOUT);
   });
 }, true);
-
-// TODO: bind key command to nuke nodes, toggle nodes, etc
-
-function dismissWellKnownDialogs () {
-  let bannerFound = false;
-
-  for (let idx in wellKnownSelectors) {
-    let banner = document.querySelector(wellKnownSelectors[idx]);
-    if (banner) {
-      banner.style = dismissStyle;
-      bannerFound = true;
-      break;
-    }
-  }
-
-  return bannerFound;
-}
 
 function nukeDialogs() {
   if (NUKE_DIALOGS_CALLED) {
@@ -89,12 +85,7 @@ function nukeDialogs() {
   NUKE_DIALOGS_CALLED = true;
   let results = getZindexRules(rules);
   let zIndexes = organizeZindexRules(results);
-
-  let bottomDialogs = getBottomDialogs(rules);
-
-  let allSoughtSelectors = zIndexes.concat(bottomDialogs);
-
-  highlight(allSoughtSelectors);
+  disappearNodes(zIndexes);
 }
 
 function organizeZindexRules (zIndexRules) {
@@ -114,9 +105,11 @@ function organizeZindexRules (zIndexRules) {
   return nodes;
 }
 
-function highlight(nodes) {
+function disappearNodes(nodes) {
   nodes.forEach((item) => {
-    console.log(item.selectorText);
+    if (DEBUG) {
+      console.log(item.selectorText);
+    }
     if (item.selectorText) {
       let node = document.querySelector(item.selectorText);
       if (node) {
@@ -124,27 +117,17 @@ function highlight(nodes) {
         if (node.textContent.toLowerCase().includes('cookie')) {
           if (!DEBUG) {
             console.log(`NUKE-MODAL: making node ${node} disappear`);
-            node.style = 'display: none;';
           }
-
-          if (DEBUG) {
-            node.style = HIGHLIGHT_STYLE;
-            node.classList.add(HIGHLIGHT_CLASS);
-
-            node.addEventListener('click', (event) => {
-              console.log('hide this node');
-              // XXX: notify IPFS CRDT of new modal dialog to nuke
-              node.style = 'display: none;';
-              console.log(`clicked ${event.target}`);
-              // XXX: remove highlights...
-            });
-          }
+          node.style.display = 'none';
+          node.classList.add(NUKED_NODE_CLASS);
         }
       }
     }
   });
 }
 
+// Get all z-index rules, we can pretty much ignore most others...
+// TODO: perhaps we need to look for 'position: fixed;' && 'bottom: 0;'
 function getZindexRules (cssRules) {
   let results = [];
   cssRules.forEach((rule, idx) => {
@@ -162,47 +145,6 @@ function getZindexRules (cssRules) {
       results = results.concat(getZindexRules(_cssRules));
     }
   });
-  return results;
-}
-
-function getBottomDialogs (cssRules) {
-  let bottomDialogProps = [
-    { name: 'bottom', value: 0, func: parseInt },
-    { name: 'position', value: 'fixed', func: (val) => val },
-  ];
-
-  let results = filterRules(cssRules, bottomDialogProps);
-
-  return results;
-}
-
-function filterRules (cssRules, properties) {
-  let results = [];
-  cssRules.forEach((rule, idx) => {
-    if (rule.style) {
-      let numberOfMatchedProps = properties.length;
-      let matched = 0;
-      for (idx in properties) {
-        if(rule.style[properties[idx].name]) {
-          // property exists
-          if (rule.style[properties[idx].name] == properties[idx].func(properties[idx].value)) {
-            matched++;
-          }
-        }
-      }
-      if (matched == numberOfMatchedProps) {
-        results.push({
-          selectorText: rule.selectorText,
-          properties: properties // just for debugging for now
-        });
-      }
-    } else if (rule.cssRules) {
-      // CSSMediaRule
-      let _cssRules = slice(rule.cssRules);
-      results = results.concat(filterRules(_cssRules, properties));
-    }
-  });
-
   return results;
 }
 
@@ -226,6 +168,8 @@ function handleResponse (response) {
   return true;
 }
 
+// Get all css rules from al stylesheets even the ones that are cross-origin
+// ... see: css-fetch.js
 function getAllRules (sheets, rules) {
   sheets.forEach((sheet, idx) => {
     try {
